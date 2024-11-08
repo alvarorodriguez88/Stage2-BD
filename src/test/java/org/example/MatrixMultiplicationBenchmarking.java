@@ -1,11 +1,6 @@
 package org.example;
 
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,7 +18,7 @@ public class MatrixMultiplicationBenchmarking {
         @Param({"10", "100", "500", "1000"})
         private int size;
 
-        @Param({"0.0", "0.2", "0.5", "0.8"}) // Porcentajes de ceros (20%, 50%, 80%)
+        @Param({"0.0", "0.2", "0.5", "0.8"})
         private double zeroPercentage;
 
         private double[][] sparseMatrixA;
@@ -76,20 +71,17 @@ public class MatrixMultiplicationBenchmarking {
 
             Random rand = new Random();
 
-            // Llena la matriz con números aleatorios tipo double entre 0.1 y 9.9
             for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
-                    matrix[i][j] = 0.1 + (9.8 * rand.nextDouble()); // Números entre 0.1 y 9.9
+                    matrix[i][j] = 0.1 + (9.8 * rand.nextDouble());
                 }
             }
 
-            // Distribuye los ceros aleatoriamente
             int placedZeros = 0;
             while (placedZeros < zeroCount) {
                 int randomRow = rand.nextInt(size);
                 int randomCol = rand.nextInt(size);
 
-                // Coloca un cero si la posición aún no tiene uno
                 if (matrix[randomRow][randomCol] != 0.0) {
                     matrix[randomRow][randomCol] = 0.0;
                     placedZeros++;
@@ -128,7 +120,7 @@ public class MatrixMultiplicationBenchmarking {
     }
 
     @Benchmark
-    public void parallelMultiplication(Operands operands) {
+    public void parallelMultiplication(Operands operands) throws InterruptedException {
         Runtime runtime = Runtime.getRuntime();
         runtime.gc();
         long beforeMemory = getMemory(runtime);
@@ -173,14 +165,5 @@ public class MatrixMultiplicationBenchmarking {
 
     private static long getMemory(Runtime runtime) {
         return runtime.totalMemory() - runtime.freeMemory();
-    }
-
-    public static void main(String[] args) throws RunnerException {
-        Options opt = new OptionsBuilder()
-                .include(MatrixMultiplicationBenchmarking.class.getSimpleName())
-                .forks(1)
-                .build();
-
-        new Runner(opt).run();
     }
 }
