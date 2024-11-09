@@ -11,25 +11,6 @@ public class SparseMatrixOptimizer {
         this.cscMatrix = new CSCMatrixMultiplication(denseMatrix);
     }
 
-    /**
-     * Multiplica la matriz dispersa en formato CSR por un vector.
-     *
-     * @param vector El vector con el que se multiplicará la matriz.
-     * @return El resultado de la multiplicación.
-     */
-    public double[] multiplyWithVector(double[] vector) {
-        if (vector.length != csrMatrix.getRows()) {
-            throw new IllegalArgumentException("El tamaño del vector no coincide con las columnas de la matriz.");
-        }
-        return csrMatrix.multiply(vector);
-    }
-
-    /**
-     * Multiplica la matriz dispersa en formato CSR por otra matriz densa.
-     *
-     * @param denseMatrix La matriz densa con la que se multiplicará la matriz CSR.
-     * @return La matriz resultado de la multiplicación.
-     */
     public double[][] multiplyWithCSRDenseMatrix(double[][] denseMatrix) {
         int rows = csrMatrix.getRows();
         int cols = denseMatrix[0].length;
@@ -59,7 +40,7 @@ public class SparseMatrixOptimizer {
         int cols = cscMatrix.getColCount();
 
         if (denseMatrix[0].length != cols) {
-            throw new IllegalArgumentException("El número de columnas de la matriz densa no coincide con las filas de la matriz CSC.");
+            throw new IllegalArgumentException("The number of columns in the dense matrix does not match the rows of the CSC matrix.");
         }
 
         double[][] result = new double[cscMatrix.getRowCount()][denseMatrix[0].length];
