@@ -34,13 +34,6 @@ public class CSRMatrixMultiplication {
             rowPointers[rows] = index;
         }
 
-        public CSRMatrix(double[] values, int[] columnIndices, int[] rowPointers, int rows) {
-            this.values = values;
-            this.columnIndices = columnIndices;
-            this.rowPointers = rowPointers;
-            this.rows = rows;
-        }
-
         public double[] multiply(double[] vector) {
             double[] result = new double[rows];
             for (int i = 0; i < rows; i++) {

@@ -11,26 +11,19 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
-public class MatrixMultiplicationBenchmarking {
+public class BenchmarkDenseOptimizers {
 
     @State(Scope.Thread)
     public static class Operands {
-        @Param({"10", "100", "500", "1000"})
+        @Param({"10", "100", "500", "1000", "2000"})
         private int size;
 
-        @Param({"0.0", "0.2", "0.5", "0.8"})
-        private double zeroPercentage;
-
-        private double[][] sparseMatrixA;
-        private double[][] sparseMatrixB;
         private double[][] denseMatrixA;
         private double[][] denseMatrixB;
         private List<Long> memoryUsages;
 
         @Setup
         public void setup() {
-            sparseMatrixA = createSparseMatrix(size, zeroPercentage);
-            sparseMatrixB = createSparseMatrix(size, zeroPercentage);
             denseMatrixA = createDenseMatrix(size);
             denseMatrixB = createDenseMatrix(size);
             memoryUsages = new ArrayList<>();
@@ -59,32 +52,6 @@ public class MatrixMultiplicationBenchmarking {
             for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
                     matrix[i][j] = random.nextDouble();
-                }
-            }
-            return matrix;
-        }
-
-        public double[][] createSparseMatrix(int size, double zeroPercentage) {
-            double[][] matrix = new double[size][size];
-            int totalElements = size * size;
-            int zeroCount = (int) (totalElements * zeroPercentage);
-
-            Random rand = new Random();
-
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
-                    matrix[i][j] = 0.1 + (9.8 * rand.nextDouble());
-                }
-            }
-
-            int placedZeros = 0;
-            while (placedZeros < zeroCount) {
-                int randomRow = rand.nextInt(size);
-                int randomCol = rand.nextInt(size);
-
-                if (matrix[randomRow][randomCol] != 0.0) {
-                    matrix[randomRow][randomCol] = 0.0;
-                    placedZeros++;
                 }
             }
             return matrix;
@@ -120,42 +87,12 @@ public class MatrixMultiplicationBenchmarking {
     }
 
     @Benchmark
-    public void parallelMultiplication(Operands operands) throws InterruptedException {
+    public void parallelMultiplication(Operands operands) {
         Runtime runtime = Runtime.getRuntime();
         runtime.gc();
         long beforeMemory = getMemory(runtime);
 
         ParallelMatrixMultiplication.multiply(operands.denseMatrixA, operands.denseMatrixB);
-
-        long afterMemory = getMemory(runtime);
-        long usedMemory = afterMemory - beforeMemory;
-
-        operands.memoryUsages.add(usedMemory);
-    }
-
-    @Benchmark
-    public void csrSparseMultiplication(Operands operands) {
-        Runtime runtime = Runtime.getRuntime();
-        runtime.gc();
-        long beforeMemory = getMemory(runtime);
-
-        SparseMatrixOptimizer sparseOptimizer = new SparseMatrixOptimizer(operands.sparseMatrixA);
-        sparseOptimizer.multiplyWithCSRDenseMatrix(operands.sparseMatrixB);
-
-        long afterMemory = getMemory(runtime);
-        long usedMemory = afterMemory - beforeMemory;
-
-        operands.memoryUsages.add(usedMemory);
-    }
-
-    @Benchmark
-    public void cscSparseMultiplication(Operands operands) {
-        Runtime runtime = Runtime.getRuntime();
-        runtime.gc();
-        long beforeMemory = getMemory(runtime);
-
-        SparseMatrixOptimizer sparseOptimizer = new SparseMatrixOptimizer(operands.sparseMatrixA);
-        sparseOptimizer.multiplyWithCSCDenseMatrix(operands.sparseMatrixB);
 
         long afterMemory = getMemory(runtime);
         long usedMemory = afterMemory - beforeMemory;

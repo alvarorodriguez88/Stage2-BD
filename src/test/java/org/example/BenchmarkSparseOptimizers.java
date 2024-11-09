@@ -11,14 +11,14 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.MILLISECONDS)
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
-public class MatrixMultiplicationSameAllBenchmarking {
+public class BenchmarkSparseOptimizers {
 
     @State(Scope.Thread)
     public static class Operands {
         @Param({"10", "100", "500", "1000", "2000"})
         private int size;
 
-        @Param({"0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0"})
+        @Param({"0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1"})
         private double zeroPercentage;
 
         private double[][] a;
@@ -74,48 +74,6 @@ public class MatrixMultiplicationSameAllBenchmarking {
             }
             return matrix;
         }
-    }
-
-    @Benchmark
-    public void naiveMultiplication(Operands operands) {
-        Runtime runtime = Runtime.getRuntime();
-        runtime.gc();
-        long beforeMemory = getMemory(runtime);
-
-        NaiveMatrixMultiplication.multiply(operands.a, operands.b);
-
-        long afterMemory = getMemory(runtime);
-        long usedMemory = afterMemory - beforeMemory;
-
-        operands.memoryUsages.add(usedMemory);
-    }
-
-    @Benchmark
-    public void blockingMultiplication(Operands operands) {
-        Runtime runtime = Runtime.getRuntime();
-        runtime.gc();
-        long beforeMemory = getMemory(runtime);
-
-        BlockMatrixMultiplication.multiply(operands.a, operands.b, 64);
-
-        long afterMemory = getMemory(runtime);
-        long usedMemory = afterMemory - beforeMemory;
-
-        operands.memoryUsages.add(usedMemory);
-    }
-
-    @Benchmark
-    public void parallelMultiplication(Operands operands) throws InterruptedException {
-        Runtime runtime = Runtime.getRuntime();
-        runtime.gc();
-        long beforeMemory = getMemory(runtime);
-
-        ParallelMatrixMultiplication.multiply(operands.a, operands.b);
-
-        long afterMemory = getMemory(runtime);
-        long usedMemory = afterMemory - beforeMemory;
-
-        operands.memoryUsages.add(usedMemory);
     }
 
     @Benchmark
